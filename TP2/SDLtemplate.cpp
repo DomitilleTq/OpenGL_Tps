@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
     Program program = loadProgram(applicationPath.dirPath() + "shaders/text2D.vs.glsl", applicationPath.dirPath() + "shaders/text2D.fs.glsl");
     program.use();
     GLuint valuePosition = glGetUniformLocation(program.getGLId(),"uModelMatrix");
-    
+    GLuint valuePosition2 = glGetUniformLocation(program.getGLId(),"uModelTrans");
     
     
 	GLuint vbos[3];
@@ -118,8 +118,11 @@ int main(int argc, char** argv) {
          	glClear(GL_COLOR_BUFFER_BIT);
 	glBindVertexArray(*vaos);
 	uTime++;
-	glm::mat3 uModelMatrix =rotate(uTime);
-	glUniformMatrix3fv (valuePosition,1,GL_FALSE ,glm::value_ptr(uModelMatrix));
+	glm::mat3 Rotate =scale(0.5,0.5);//*translate(0.5,1);//rotate(uTime)*
+	glm::mat3 Trans = translate(1,0.5);
+	
+	glUniformMatrix3fv (valuePosition,1,GL_FALSE ,glm::value_ptr(Rotate));
+	glUniformMatrix3fv (valuePosition2,1,GL_FALSE ,glm::value_ptr(Trans));
 	glDrawArrays(GL_TRIANGLES, 0, 3); // Si on veut dessiner plus de triangle le dernier paramétre serait plus grand
 	glBindVertexArray(0);
 
