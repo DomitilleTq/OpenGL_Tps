@@ -4,6 +4,7 @@
 #include <glimac/Program.hpp>
 #include <glimac/FilePath.hpp>
 #include <glimac/glm.hpp>
+#include <glimac/Image.hpp>
 #include <cstddef>
 #include <glm/glm.hpp>
 
@@ -51,6 +52,15 @@ int main(int argc, char** argv) {
 
     std::cout << "OpenGL Version : " << glGetString(GL_VERSION) << std::endl;
     std::cout << "GLEW Version : " << glewGetString(GLEW_VERSION) << std::endl;
+    
+    std::unique_ptr<Image> imgTriforce = loadImage("/root/Documents/GLImac-Template/assets/textures/triforce.png");
+    
+    if (!imgTriforce) 
+   	std::cout << "imgTriforce null " << std::endl;
+   	
+   	glGenTextures()
+    
+    
     
     FilePath applicationPath(argv[0]);
     Program program = loadProgram(applicationPath.dirPath() + "shaders/text2D.vs.glsl", applicationPath.dirPath() + "shaders/text2D.fs.glsl");
