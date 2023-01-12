@@ -38,6 +38,7 @@ struct Vertex2DUV{
 //float uTime =45;
 int main(int argc, char** argv) {
 	float uTime =45;
+	float miniTime=0;
     // Initialize SDL and open a window
     SDLWindowManager windowManager(800, 600, "GLImac");
 
@@ -56,6 +57,7 @@ int main(int argc, char** argv) {
     program.use();
     GLuint valuePosition = glGetUniformLocation(program.getGLId(),"uModelMatrix");
     GLuint valuePosition2 = glGetUniformLocation(program.getGLId(),"uModelTrans");
+    GLuint valuePosition3 = glGetUniformLocation(program.getGLId(),"uColor");
     
     
 	GLuint vbos[3];
@@ -118,12 +120,31 @@ int main(int argc, char** argv) {
          	glClear(GL_COLOR_BUFFER_BIT);
 	glBindVertexArray(*vaos);
 	uTime++;
-	glm::mat3 Rotate =scale(0.5,0.5);//*translate(0.5,1);//rotate(uTime)*
-	glm::mat3 Trans = translate(1,0.5);
-	
+	miniTime=miniTime-0.5;
+	glm::mat3 Rotate =scale(0.3,0.3)*rotate(uTime);//*translate(0.5,1);
 	glUniformMatrix3fv (valuePosition,1,GL_FALSE ,glm::value_ptr(Rotate));
+	
+	glm::mat3 Trans = translate(1,1)*rotate(miniTime);
 	glUniformMatrix3fv (valuePosition2,1,GL_FALSE ,glm::value_ptr(Trans));
+	//glm::vec3 Color = glm::vec3(0,0,1);
+	glUniform3f(valuePosition3,0,0,1);
 	glDrawArrays(GL_TRIANGLES, 0, 3); // Si on veut dessiner plus de triangle le dernier paramétre serait plus grand
+	
+	glm::mat3 Trans1 = translate(-1,1)*rotate(miniTime);
+	glUniformMatrix3fv (valuePosition2,1,GL_FALSE ,glm::value_ptr(Trans1));
+	glUniform3f(valuePosition3,1,0,0);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	
+	glm::mat3 Trans2 = translate(-1,-1)*rotate(miniTime);
+	glUniformMatrix3fv (valuePosition2,1,GL_FALSE ,glm::value_ptr(Trans2));
+	glUniform3f(valuePosition3,0,1,0);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	
+	glm::mat3 Trans3 = translate(1,-1)*rotate(miniTime);
+	glUniformMatrix3fv (valuePosition2,1,GL_FALSE ,glm::value_ptr(Trans3));
+	glUniform3f(valuePosition3,1,1,1);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	
 	glBindVertexArray(0);
 
         // Update the display
