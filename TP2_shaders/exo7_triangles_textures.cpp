@@ -54,18 +54,35 @@ int main(int argc, char** argv) {
     std::cout << "OpenGL Version : " << glGetString(GL_VERSION) << std::endl;
     std::cout << "GLEW Version : " << glewGetString(GLEW_VERSION) << std::endl;
     
-    std::unique_ptr<Image> imgTriforce = loadImage("/root/Documents/GLImac-Template/assets/textures/triforce.png");
-    
+
+    // Load notre texture => doit être fait avant la boucle de rendu 
+    std::unique_ptr<Image> imgTriforce = loadImage("../assets/textures/triforce.png");
     if (!imgTriforce) 
-   	std::cout << "imgTriforce null " << std::endl;
-   	
-   	
+   	    std::cout << "imgTriforce null " << std::endl;
+   	// créez un nouveau texture object
+    GLuint * textures = new GLuint[1];
+    glGenTextures(1,textures);   	
+    // bindez la texture sur la cible GL_TEXTURE_2D
+    glBindTexture(GL_TEXTURE_2D,textures[0]);
+    // envoyer l'image à la carte graphique 
+    // afin qu'elle soit stockée dans votre texture object
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+        imgTriforce->getWidth(), imgTriforce->getHeight(),
+        0, GL_RGBA, GL_FLOAT,
+        (const void *)imgTriforce->getPixels()
+    );
+    // spécifier les filtres à appliquer
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // débindez la texture
+    glBindTexture(GL_TEXTURE_2D,0);
+
     FilePath applicationPath(argv[0]);
     Program program = loadProgram(applicationPath.dirPath() + "shaders/text2D.vs.glsl", applicationPath.dirPath() + "shaders/text2D.fs.glsl");
     program.use();
     GLuint valuePosition = glGetUniformLocation(program.getGLId(),"uModelMatrix");
     GLuint valuePosition2 = glGetUniformLocation(program.getGLId(),"uModelTrans");
-    GLuint valuePosition3 = glGetUniformLocation(program.getGLId(),"uColor");
+    GLuint valuePosition3 = glGetUniformLocation(program.getGLId(),"uTexture");
     
     
 	GLuint vbos[3];
@@ -77,9 +94,10 @@ int main(int argc, char** argv) {
 
     // => Tableau de sommets : un seul exemplaire de chaque sommet
     Vertex2DUV vertices[] = {
-        Vertex2DUV(glm::vec2(-1, -1), glm::vec2(0, 0)), // Sommet 0
-        Vertex2DUV(glm::vec2(1, -1), glm::vec2(0, 0)), // Sommet 1
-        Vertex2DUV(glm::vec2(0, 1), glm::vec2(0, 0)), // Sommet 2
+        // triangle
+        Vertex2DUV(glm::vec2(0, 0), glm::vec2(0, 1)), // Sommet 0
+        Vertex2DUV(glm::vec2(1, 0), glm::vec2(1, 1)), // Sommet 1
+        Vertex2DUV(glm::vec2(0.5, 0.707), glm::vec2(0.5, 0)), // Sommet 2
     };
 	glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(Vertex2DUV), vertices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -102,9 +120,8 @@ int main(int argc, char** argv) {
 	glVertexAttribPointer(VERTEX_ATTR_TEXTURE, 3, GL_FLOAT, GL_FALSE,sizeof(Vertex2DUV),  (const GLvoid*)(offsetof(Vertex2DUV, texture)));
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
-	glBindVertexArray(*vaos);
 	glBindVertexArray(0);
-	
+    
 
     /*********************************
      * HERE SHOULD COME THE INITIALIZATION CODE
@@ -127,32 +144,34 @@ int main(int argc, char** argv) {
          
         glClear(GL_COLOR_BUFFER_BIT);
         glBindVertexArray(*vaos);
+
+        // bindez la texture sur la cible GL_TEXTURE_2D
+        glBindTexture(GL_TEXTURE_2D,textures[0]);
+        glUniform1i(valuePosition3,0);
+
+        // glDrawArrays(GL_TRIANGLES, 0, 3); 
+
         uTime++;
-        miniTime=miniTime-0.5;
-        glm::mat3 Rotate =scale(0.3,0.3)*rotate(uTime);//*translate(0.5,1);
+        miniTime+=0.5;
+        glm::mat3 Rotate =scale(0.5,0.5);//*rotate(uTime/5);//*translate(0.5,1);
         glUniformMatrix3fv (valuePosition,1,GL_FALSE ,glm::value_ptr(Rotate));
-        
-        glm::mat3 Trans = translate(1,1)*rotate(miniTime);
+        // glDrawArrays(GL_TRIANGLES, 0, 3); 
+
+        glm::mat3 Trans = translate(0.5,0)*rotate(miniTime);
         glUniformMatrix3fv (valuePosition2,1,GL_FALSE ,glm::value_ptr(Trans));
-        //glm::vec3 Color = glm::vec3(0,0,1);
-        glUniform3f(valuePosition3,0,0,1);
-        glDrawArrays(GL_TRIANGLES, 0, 3); // Si on veut dessiner plus de triangle le dernier paramétre serait plus grand
+        glDrawArrays(GL_TRIANGLES, 0, 3); 
         
-        glm::mat3 Trans1 = translate(-1,1)*rotate(miniTime);
+        glm::mat3 Trans1 = translate(-0.5,0.5)*rotate(miniTime);
         glUniformMatrix3fv (valuePosition2,1,GL_FALSE ,glm::value_ptr(Trans1));
-        glUniform3f(valuePosition3,1,0,0);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 3); 
         
-        glm::mat3 Trans2 = translate(-1,-1)*rotate(miniTime);
-        glUniformMatrix3fv (valuePosition2,1,GL_FALSE ,glm::value_ptr(Trans2));
-        glUniform3f(valuePosition3,0,1,0);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        
-        glm::mat3 Trans3 = translate(1,-1)*rotate(miniTime);
-        glUniformMatrix3fv (valuePosition2,1,GL_FALSE ,glm::value_ptr(Trans3));
-        glUniform3f(valuePosition3,1,1,1);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        
+        glm::mat3 Trans2 = translate(-0.5,-0.5)*rotate(miniTime);
+        glUniformMatrix3fv (valuePosition2,1,GL_FALSE ,glm::value_ptr(Trans2));        
+        glDrawArrays(GL_TRIANGLES, 0, 3); // pour plus de points, le dernier paramétre plus grand
+
+
+
+        glBindTexture(GL_TEXTURE_2D,0);
         glBindVertexArray(0);
 
         // Update the display
@@ -160,5 +179,9 @@ int main(int argc, char** argv) {
     }
 	glDeleteBuffers(3, vbos);
     glDeleteVertexArrays(3,vaos);
+    
+    // détruire la texture objet à la fin
+    glDeleteTextures(1,textures);
+
     return EXIT_SUCCESS;
 }
