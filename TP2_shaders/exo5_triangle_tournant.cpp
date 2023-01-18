@@ -4,7 +4,6 @@
 #include <glimac/Program.hpp>
 #include <glimac/FilePath.hpp>
 #include <glimac/glm.hpp>
-#include <glimac/Image.hpp>
 #include <cstddef>
 #include <glm/glm.hpp>
 
@@ -25,7 +24,6 @@ struct Vertex2DUV{
 int main(int argc, char** argv) {
 
 	float uTime =45;
-	float miniTime=0;
     // Initialize SDL and open a window
     SDLWindowManager windowManager(800, 600, "GLImac");
 
@@ -39,27 +37,12 @@ int main(int argc, char** argv) {
     std::cout << "OpenGL Version : " << glGetString(GL_VERSION) << std::endl;
     std::cout << "GLEW Version : " << glewGetString(GLEW_VERSION) << std::endl;
     
-    std::unique_ptr<Image> imgTriforce = loadImage("/root/Documents/GLImac-Template/assets/textures/triforce.png");
-    
-    if (!imgTriforce) 
-   	std::cout << "imgTriforce null " << std::endl;
-   	
-   	glGenTextures()
-    
-    
-    
     FilePath applicationPath(argv[0]);
     Program program = loadProgram(applicationPath.dirPath() + "shaders/text2D.vs.glsl", applicationPath.dirPath() + "shaders/text2D.fs.glsl");
     program.use();
-<<<<<<< HEAD:TP2_shaders/exo5_triangle_tournant.cpp
 
 
     GLuint valuePosition = glGetUniformLocation(program.getGLId(),"uTime");
-=======
-    GLuint valuePosition = glGetUniformLocation(program.getGLId(),"uModelMatrix");
-    GLuint valuePosition2 = glGetUniformLocation(program.getGLId(),"uModelTrans");
-    GLuint valuePosition3 = glGetUniformLocation(program.getGLId(),"uColor");
->>>>>>> de6de51a1f6a24e1aa76a5677a251dbc5b79c9dd:TP2/SDLtemplate.cpp
     
     
 	GLuint vbos[3];
@@ -119,44 +102,12 @@ int main(int argc, char** argv) {
          * HERE SHOULD COME THE RENDERING CODE
          *********************************/
          
-<<<<<<< HEAD:TP2_shaders/exo5_triangle_tournant.cpp
         glClear(GL_COLOR_BUFFER_BIT);
         glBindVertexArray(*vaos);
         uTime++;
         glUniform1f (valuePosition,uTime);
         glDrawArrays(GL_TRIANGLES, 0, 3); // Si on veut dessiner plus de triangle le dernier paramétre serait plus grand
         glBindVertexArray(0);
-=======
-         	glClear(GL_COLOR_BUFFER_BIT);
-	glBindVertexArray(*vaos);
-	uTime++;
-	miniTime=miniTime-0.5;
-	glm::mat3 Rotate =scale(0.3,0.3)*rotate(uTime);//*translate(0.5,1);
-	glUniformMatrix3fv (valuePosition,1,GL_FALSE ,glm::value_ptr(Rotate));
-	
-	glm::mat3 Trans = translate(1,1)*rotate(miniTime);
-	glUniformMatrix3fv (valuePosition2,1,GL_FALSE ,glm::value_ptr(Trans));
-	//glm::vec3 Color = glm::vec3(0,0,1);
-	glUniform3f(valuePosition3,0,0,1);
-	glDrawArrays(GL_TRIANGLES, 0, 3); // Si on veut dessiner plus de triangle le dernier paramétre serait plus grand
-	
-	glm::mat3 Trans1 = translate(-1,1)*rotate(miniTime);
-	glUniformMatrix3fv (valuePosition2,1,GL_FALSE ,glm::value_ptr(Trans1));
-	glUniform3f(valuePosition3,1,0,0);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	
-	glm::mat3 Trans2 = translate(-1,-1)*rotate(miniTime);
-	glUniformMatrix3fv (valuePosition2,1,GL_FALSE ,glm::value_ptr(Trans2));
-	glUniform3f(valuePosition3,0,1,0);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	
-	glm::mat3 Trans3 = translate(1,-1)*rotate(miniTime);
-	glUniformMatrix3fv (valuePosition2,1,GL_FALSE ,glm::value_ptr(Trans3));
-	glUniform3f(valuePosition3,1,1,1);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	
-	glBindVertexArray(0);
->>>>>>> de6de51a1f6a24e1aa76a5677a251dbc5b79c9dd:TP2/SDLtemplate.cpp
 
         // Update the display
         windowManager.swapBuffers();

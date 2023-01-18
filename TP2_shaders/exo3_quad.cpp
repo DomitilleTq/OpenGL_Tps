@@ -43,14 +43,10 @@ int main(int argc, char** argv) {
     std::cout << "OpenGL Version : " << glGetString(GL_VERSION) << std::endl;
     std::cout << "GLEW Version : " << glewGetString(GLEW_VERSION) << std::endl;
     
-    // FilePath applicationPath(argv[0]);
-    // Program program = loadProgram(applicationPath.dirPath() + "shaders/"+VertexShader, applicationPath.dirPath() + "shaders/"+FragmentShader);
-    // program.use();
-    
-        FilePath applicationPath(argv[0]);
-    Program program = loadProgram(applicationPath.dirPath() + "shaders/color2D.vs.glsl", applicationPath.dirPath() + "shaders/color2D.fs.glsl");
+    FilePath applicationPath(argv[0]);
+    Program program = loadProgram(applicationPath.dirPath() + "shaders/"+VertexShader, applicationPath.dirPath() + "shaders/"+FragmentShader);
     program.use();
-
+    
 
     /*********************************
      * HERE SHOULD COME THE INITIALIZATION CODE
@@ -73,6 +69,11 @@ int main(int argc, char** argv) {
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+
+    //---------------------------------
+    // Gestion avec IBO
+    //---------------------------------
+
     // => Creation du IBO
     GLuint ibo;
     glGenBuffers(1, &ibo);
@@ -92,6 +93,11 @@ int main(int argc, char** argv) {
 
     // => Comme d'habitude on debind avant de passer à autre chose
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
+    //---------------------------------
+    // Retour du vao
+    //---------------------------------
 
     GLuint vao;
     glGenVertexArrays(1, &vao);

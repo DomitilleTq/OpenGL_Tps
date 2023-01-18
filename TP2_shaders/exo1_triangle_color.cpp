@@ -76,9 +76,8 @@ int main(int argc, char** argv) {
 	glBindBuffer(GL_ARRAY_BUFFER, *vbos);
 	glVertexAttribPointer(VERTEX_ATTR_POSITION, 2, GL_FLOAT, GL_FALSE,sizeof(Vertex2DColor), offsetof(Vertex2DColor, position));
 	glVertexAttribPointer(VERTEX_ATTR_COLOR, 3, GL_FLOAT, GL_FALSE,sizeof(Vertex2DColor),  (const GLvoid*)(offsetof(Vertex2DColor, color)));
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
-	glBindVertexArray(*vaos);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
      
      /*********************************

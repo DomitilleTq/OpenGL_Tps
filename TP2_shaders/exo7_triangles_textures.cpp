@@ -22,7 +22,6 @@ glm::mat3 scale(float sx, float sy){
 
 glm::mat3 rotate(float a){
 	glm::mat3 M = glm::mat3(glm::vec3(cos(glm::radians(a)), sin(glm::radians(a)), 0), glm::vec3(-sin(glm::radians(a)), cos(glm::radians(a)), 0), glm::vec3(0, 0, 1));
-	//mat3 M = mat3(vec3(glm::cos(glm::radians(a)), glm::sin(glm::radians(a)), 0), vec3(-glm::sin(glm::radians(a)), glm::cos(glm::radians(a)), 0), vec3(0, 0, 1));
 	return M;
 }
 
@@ -37,10 +36,9 @@ struct Vertex2DUV{
         texture = texture_;
     }
 };
-//float uTime =45;
+
 int main(int argc, char** argv) {
-	float uTime =45;
-	float miniTime=0;
+
     // Initialize SDL and open a window
     SDLWindowManager windowManager(800, 600, "GLImac");
 
@@ -54,18 +52,21 @@ int main(int argc, char** argv) {
     std::cout << "OpenGL Version : " << glGetString(GL_VERSION) << std::endl;
     std::cout << "GLEW Version : " << glewGetString(GLEW_VERSION) << std::endl;
     
+    //---------------------------------
+    // Textures
+    //---------------------------------
 
     // Load notre texture => doit être fait avant la boucle de rendu 
     std::unique_ptr<Image> imgTriforce = loadImage("../assets/textures/triforce.png");
     if (!imgTriforce) 
    	    std::cout << "imgTriforce null " << std::endl;
-   	// créez un nouveau texture object
+
+   	// créer un nouveau texture object
     GLuint * textures = new GLuint[1];
     glGenTextures(1,textures);   	
-    // bindez la texture sur la cible GL_TEXTURE_2D
+    // binder la texture sur la cible GL_TEXTURE_2D
     glBindTexture(GL_TEXTURE_2D,textures[0]);
-    // envoyer l'image à la carte graphique 
-    // afin qu'elle soit stockée dans votre texture object
+    // envoyer img au GPU pour stockée dans la texture object
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
         imgTriforce->getWidth(), imgTriforce->getHeight(),
         0, GL_RGBA, GL_FLOAT,
@@ -74,16 +75,31 @@ int main(int argc, char** argv) {
     // spécifier les filtres à appliquer
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // débindez la texture
+    // débinder la texture
     glBindTexture(GL_TEXTURE_2D,0);
+
+
+    //---------------------------------
+    // Load les shaders
+    //---------------------------------
 
     FilePath applicationPath(argv[0]);
     Program program = loadProgram(applicationPath.dirPath() + "shaders/text2D.vs.glsl", applicationPath.dirPath() + "shaders/text2D.fs.glsl");
     program.use();
+
+
+    //---------------------------------
+    // Variables uniformes
+    //---------------------------------
+
     GLuint valuePosition = glGetUniformLocation(program.getGLId(),"uModelMatrix");
     GLuint valuePosition2 = glGetUniformLocation(program.getGLId(),"uModelTrans");
     GLuint valuePosition3 = glGetUniformLocation(program.getGLId(),"uTexture");
     
+
+    //---------------------------------
+    // Buffers et Vertices
+    //---------------------------------
     
 	GLuint vbos[3];
 	glGenBuffers(3, vbos);
@@ -95,16 +111,18 @@ int main(int argc, char** argv) {
     // => Tableau de sommets : un seul exemplaire de chaque sommet
     Vertex2DUV vertices[] = {
         // triangle
-        Vertex2DUV(glm::vec2(0, 0), glm::vec2(0, 1)), // Sommet 0
-        Vertex2DUV(glm::vec2(1, 0), glm::vec2(1, 1)), // Sommet 1
-        Vertex2DUV(glm::vec2(0.5, 0.707), glm::vec2(0.5, 0)), // Sommet 2
+        Vertex2DUV(glm::vec2(-0.5, -0.5), glm::vec2(0, 1)), // Sommet 0
+        Vertex2DUV(glm::vec2(0.5, -0.5), glm::vec2(1, 1)), // Sommet 1
+        Vertex2DUV(glm::vec2(0, 0.707), glm::vec2(0.5, 0)) // Sommet 2
     };
 	glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(Vertex2DUV), vertices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	//VAO
+
+    //---------------------------------
+	// VAO
+    //---------------------------------
+
 	GLuint vaos[3];
 	glGenVertexArrays(3, vaos);
 	glBindVertexArray(*vaos);
@@ -117,15 +135,18 @@ int main(int argc, char** argv) {
 	
 	glBindBuffer(GL_ARRAY_BUFFER, *vbos);
 	glVertexAttribPointer(VERTEX_ATTR_POSITION, 2, GL_FLOAT, GL_FALSE,sizeof(Vertex2DUV), offsetof(Vertex2DUV, position));
-	glVertexAttribPointer(VERTEX_ATTR_TEXTURE, 3, GL_FLOAT, GL_FALSE,sizeof(Vertex2DUV),  (const GLvoid*)(offsetof(Vertex2DUV, texture)));
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribPointer(VERTEX_ATTR_TEXTURE, 2, GL_FLOAT, GL_FALSE,sizeof(Vertex2DUV),  (const GLvoid*)(offsetof(Vertex2DUV, texture)));
 	
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
     
 
-    /*********************************
-     * HERE SHOULD COME THE INITIALIZATION CODE
-     *********************************/
+    //---------------------------------
+    // Boucle des drawings
+    //---------------------------------
+
+	float uTime =45;
+	float miniTime=0;
 
     // Application loop:
     bool done = false;
@@ -137,10 +158,6 @@ int main(int argc, char** argv) {
                 done = true; // Leave the loop after this iteration
             }
         }
-
-        /*********************************
-         * HERE SHOULD COME THE RENDERING CODE
-         *********************************/
          
         glClear(GL_COLOR_BUFFER_BIT);
         glBindVertexArray(*vaos);
@@ -148,8 +165,7 @@ int main(int argc, char** argv) {
         // bindez la texture sur la cible GL_TEXTURE_2D
         glBindTexture(GL_TEXTURE_2D,textures[0]);
         glUniform1i(valuePosition3,0);
-
-        // glDrawArrays(GL_TRIANGLES, 0, 3); 
+        //glDrawArrays(GL_TRIANGLES, 0, 3); 
 
         uTime++;
         miniTime+=0.5;
@@ -170,11 +186,10 @@ int main(int argc, char** argv) {
         glDrawArrays(GL_TRIANGLES, 0, 3); // pour plus de points, le dernier paramétre plus grand
 
 
-
         glBindTexture(GL_TEXTURE_2D,0);
         glBindVertexArray(0);
 
-        // Update the display
+        // Update the displaymo
         windowManager.swapBuffers();
     }
 	glDeleteBuffers(3, vbos);

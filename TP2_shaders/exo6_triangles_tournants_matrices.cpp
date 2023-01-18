@@ -37,10 +37,9 @@ struct Vertex2DUV{
         texture = texture_;
     }
 };
-//float uTime =45;
+
 int main(int argc, char** argv) {
-	float uTime =45;
-	float miniTime=0;
+
     // Initialize SDL and open a window
     SDLWindowManager windowManager(800, 600, "GLImac");
 
@@ -54,15 +53,11 @@ int main(int argc, char** argv) {
     std::cout << "OpenGL Version : " << glGetString(GL_VERSION) << std::endl;
     std::cout << "GLEW Version : " << glewGetString(GLEW_VERSION) << std::endl;
     
-    std::unique_ptr<Image> imgTriforce = loadImage("/root/Documents/GLImac-Template/assets/textures/triforce.png");
-    
-    if (!imgTriforce) 
-   	std::cout << "imgTriforce null " << std::endl;
-   	
    	
     FilePath applicationPath(argv[0]);
     Program program = loadProgram(applicationPath.dirPath() + "shaders/text2D.vs.glsl", applicationPath.dirPath() + "shaders/text2D.fs.glsl");
     program.use();
+
     GLuint valuePosition = glGetUniformLocation(program.getGLId(),"uModelMatrix");
     GLuint valuePosition2 = glGetUniformLocation(program.getGLId(),"uModelTrans");
     GLuint valuePosition3 = glGetUniformLocation(program.getGLId(),"uColor");
@@ -84,8 +79,6 @@ int main(int argc, char** argv) {
 	glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(Vertex2DUV), vertices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
 	//VAO
 	GLuint vaos[3];
 	glGenVertexArrays(3, vaos);
@@ -109,6 +102,9 @@ int main(int argc, char** argv) {
     /*********************************
      * HERE SHOULD COME THE INITIALIZATION CODE
      *********************************/
+
+	float uTime =45;
+	float miniTime=0;
 
     // Application loop:
     bool done = false;
@@ -134,7 +130,6 @@ int main(int argc, char** argv) {
         
         glm::mat3 Trans = translate(1,1)*rotate(miniTime);
         glUniformMatrix3fv (valuePosition2,1,GL_FALSE ,glm::value_ptr(Trans));
-        //glm::vec3 Color = glm::vec3(0,0,1);
         glUniform3f(valuePosition3,0,0,1);
         glDrawArrays(GL_TRIANGLES, 0, 3); // Si on veut dessiner plus de triangle le dernier paramétre serait plus grand
         
