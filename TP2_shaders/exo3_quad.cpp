@@ -14,19 +14,22 @@ struct Vertex2DColor {
 	
 	Vertex2DColor(){}
 	Vertex2DColor(glm::vec2 position_,glm::vec3 color_)
-   {
-   	position = position_;
-      color = color_;}
+    {    
+   	    position = position_;
+        color = color_;
+    }
 };
 
 int main(int argc, char** argv) {
+
 	if (argc != 3)
     {
-            printf("erreur d'arguments %d\n",argc);
-            exit(1);
-        }
+        printf("erreur d'arguments %d\n",argc);
+        exit(1);
+    }
 	char* VertexShader = argv[1];
 	char* FragmentShader = argv[2];
+
     // Initialize SDL and open a window
     SDLWindowManager windowManager(800, 600, "GLImac");
 
@@ -40,9 +43,18 @@ int main(int argc, char** argv) {
     std::cout << "OpenGL Version : " << glGetString(GL_VERSION) << std::endl;
     std::cout << "GLEW Version : " << glewGetString(GLEW_VERSION) << std::endl;
     
-    FilePath applicationPath(argv[0]);
-    Program program = loadProgram(applicationPath.dirPath() + "shaders/"+VertexShader, applicationPath.dirPath() + "shaders/"+FragmentShader);
+    // FilePath applicationPath(argv[0]);
+    // Program program = loadProgram(applicationPath.dirPath() + "shaders/"+VertexShader, applicationPath.dirPath() + "shaders/"+FragmentShader);
+    // program.use();
+    
+        FilePath applicationPath(argv[0]);
+    Program program = loadProgram(applicationPath.dirPath() + "shaders/color2D.vs.glsl", applicationPath.dirPath() + "shaders/color2D.fs.glsl");
     program.use();
+
+
+    /*********************************
+     * HERE SHOULD COME THE INITIALIZATION CODE
+     *********************************/
 
     GLuint vbo;
     glGenBuffers(1, &vbo);
@@ -83,22 +95,23 @@ int main(int argc, char** argv) {
 
     GLuint vao;
     glGenVertexArrays(1, &vao);
-
     glBindVertexArray(vao);
 
     // => On bind l'IBO sur GL_ELEMENT_ARRAY_BUFFER; puisqu'un VAO est actuellement bindé,
     // cela a pour effet d'enregistrer l'IBO dans le VAO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 
-    const GLuint VERTEX_ATTR_POSITION = 3;
-    const GLuint VERTEX_ATTR_COLOR = 8;
+    const GLuint VERTEX_ATTR_POSITION = 0;
+    const GLuint VERTEX_ATTR_COLOR = 1;
     glEnableVertexAttribArray(VERTEX_ATTR_POSITION);
-    //glEnableVertexAttribArray(VERTEX_ATTR_COLOR);
+    glEnableVertexAttribArray(VERTEX_ATTR_COLOR);
+
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexAttribPointer(VERTEX_ATTR_POSITION, 2, GL_FLOAT, GL_FALSE,sizeof(Vertex2DColor), (const GLvoid*) offsetof(Vertex2DColor, position));
-    //glVertexAttribPointer(VERTEX_ATTR_COLOR, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex2DColor), (const GLvoid*) offsetof(Vertex2DColor, color));
+    glVertexAttribPointer(VERTEX_ATTR_COLOR, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex2DColor), (const GLvoid*) offsetof(Vertex2DColor, color));
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+    glBindVertexArray(vao);
     glBindVertexArray(0);
 
     // Application loop:
@@ -113,7 +126,6 @@ int main(int argc, char** argv) {
         }
 
         glClear(GL_COLOR_BUFFER_BIT);
-
         glBindVertexArray(vao);
 
         // => On utilise glDrawElements à la place de glDrawArrays

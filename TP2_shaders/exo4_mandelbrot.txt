@@ -1,0 +1,5 @@
+Utiliser le quadrilatere de l'exo 3 
+de sorte à recouvrir la fenetre,
+
+avec les shaders Mandelbrot 
+se trouvant dans le repertoir ./shader

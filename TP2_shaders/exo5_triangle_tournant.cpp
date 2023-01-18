@@ -9,22 +9,6 @@
 
 using namespace glimac;
 
-glm::mat3 translate(float tx, float ty){
-	glm::mat3 M = glm::mat3(glm::vec3(1, 0, 0), glm::vec3(0, 1, 0), glm::vec3(tx, ty, 1));
-   return M;
-}
-
-glm::mat3 scale(float sx, float sy){
-	glm::mat3 M = glm::mat3(glm::vec3(sx, 0, 0), glm::vec3(0, sy, 0), glm::vec3(0, 0, 1));
-	return M;
-}
-
-glm::mat3 rotate(float a){
-	glm::mat3 M = glm::mat3(glm::vec3(cos(glm::radians(a)), sin(glm::radians(a)), 0), glm::vec3(-sin(glm::radians(a)), cos(glm::radians(a)), 0), glm::vec3(0, 0, 1));
-	//mat3 M = mat3(vec3(glm::cos(glm::radians(a)), glm::sin(glm::radians(a)), 0), vec3(-glm::sin(glm::radians(a)), glm::cos(glm::radians(a)), 0), vec3(0, 0, 1));
-	return M;
-}
-
 struct Vertex2DUV{
 	glm::vec2 position;
 	glm::vec2 texture;
@@ -35,8 +19,10 @@ struct Vertex2DUV{
    	position = position_;
       texture = texture_;}
 };
+
 //float uTime =45;
 int main(int argc, char** argv) {
+
 	float uTime =45;
     // Initialize SDL and open a window
     SDLWindowManager windowManager(800, 600, "GLImac");
@@ -54,8 +40,9 @@ int main(int argc, char** argv) {
     FilePath applicationPath(argv[0]);
     Program program = loadProgram(applicationPath.dirPath() + "shaders/text2D.vs.glsl", applicationPath.dirPath() + "shaders/text2D.fs.glsl");
     program.use();
-    GLuint valuePosition = glGetUniformLocation(program.getGLId(),"uModelMatrix");
-    
+
+
+    GLuint valuePosition = glGetUniformLocation(program.getGLId(),"uTime");
     
     
 	GLuint vbos[3];
@@ -115,13 +102,12 @@ int main(int argc, char** argv) {
          * HERE SHOULD COME THE RENDERING CODE
          *********************************/
          
-         	glClear(GL_COLOR_BUFFER_BIT);
-	glBindVertexArray(*vaos);
-	uTime++;
-	glm::mat3 uModelMatrix =rotate(uTime);
-	glUniformMatrix3fv (valuePosition,1,GL_FALSE ,glm::value_ptr(uModelMatrix));
-	glDrawArrays(GL_TRIANGLES, 0, 3); // Si on veut dessiner plus de triangle le dernier paramétre serait plus grand
-	glBindVertexArray(0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glBindVertexArray(*vaos);
+        uTime++;
+        glUniform1f (valuePosition,uTime);
+        glDrawArrays(GL_TRIANGLES, 0, 3); // Si on veut dessiner plus de triangle le dernier paramétre serait plus grand
+        glBindVertexArray(0);
 
         // Update the display
         windowManager.swapBuffers();

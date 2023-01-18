@@ -27,39 +27,67 @@ void main() {
   vFragColor = aVertexColor;
   vVertexPosition=aVertexPosition;
  
+  // ----------------------------------------------------------
   // Translation 
-  /*vec2 translation=vec2(0.5);
-  gl_Position = vec4(aVertexPosition+translation, 0, 1);// translation*/
+  // ----------------------------------------------------------
   
-  /*mat3 M = translate(0.5,0.5);
+  /*
+  vec2 translation=vec2(0.5);
+  gl_Position = vec4(aVertexPosition+translation, 0, 1);// translation
+  */
+  
+  /*
+  mat3 M = translate(0.5,0.5);
   vec2 transformed = (M * vec3(aVertexPosition, 1)).xy;
-  gl_Position = vec4(transformed, 0, 1);*/
+  gl_Position = vec4(transformed, 0, 1);
+  */
   
+  // ----------------------------------------------------------
   // Scale
+  // ----------------------------------------------------------
+
   //gl_Position = vec4(aVertexPosition*2, 0, 1);// double taille triangle
   
-  /*mat3 M = scale(2,2);
+  /*
+  mat3 M = scale(2,2);
   vec2 transformed = (M * vec3(aVertexPosition, 1)).xy;
-  gl_Position = vec4(transformed, 0, 1);*/
+  gl_Position = vec4(transformed, 0, 1);
+  */
   
   //gl_Position = vec4(aVertexPosition.x*2,aVertexPosition.y/2, 0, 1);// double x et moitié y
   
-  /*mat3 M = scale(2,0.5);
+  /*
+  mat3 M = scale(2,0.5);
   vec2 transformed = (M * vec3(aVertexPosition, 1)).xy;
-  gl_Position = vec4(transformed, 0, 1);*/
+  gl_Position = vec4(transformed, 0, 1);
+  */
   
+  // ----------------------------------------------------------
   // Rotation
-  /*mat3 M = rotate(45);
+  // ----------------------------------------------------------
+
+  /*
+  mat3 M = rotate(45);
   vec2 transformed = (M * vec3(aVertexPosition, 1)).xy;
-  gl_Position = vec4(transformed, 0, 1);*/
+  gl_Position = vec4(transformed, 0, 1);
+  */
   
+  
+  // ----------------------------------------------------------
   // Echainement
-  /*mat3 T = translate(0.5,0);
+  // ----------------------------------------------------------
+
+  /*
+  mat3 T = translate(0.5,0);
   mat3 R = rotate(45);
   mat3 S = scale(0.5,0.5);
   vec2 transformed = (vec3(aVertexPosition, 1)*T*R*S).xy;
-  gl_Position = vec4(transformed, 0, 1);*/
+  gl_Position = vec4(transformed, 0, 1);
+  */
   
+  // ----------------------------------------------------------
   // Halo
+  // ----------------------------------------------------------
+
   gl_Position = vec4(aVertexPosition, 0, 1);
 };

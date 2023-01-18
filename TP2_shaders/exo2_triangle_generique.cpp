@@ -14,19 +14,22 @@ struct Vertex2DColor {
 	
 	Vertex2DColor(){}
 	Vertex2DColor(glm::vec2 position_,glm::vec3 color_)
-   {
-   	position = position_;
-      color = color_;}
+    {    
+   	    position = position_;
+        color = color_;
+    }
 };
 
 int main(int argc, char** argv) {
+
 	if (argc != 3)
     {
-            printf("erreur d'arguments %d\n",argc);
-            exit(1);
-        }
+        printf("erreur d'arguments %d\n",argc);
+        exit(1);
+    }
 	char* VertexShader = argv[1];
 	char* FragmentShader = argv[2];
+
     // Initialize SDL and open a window
     SDLWindowManager windowManager(800, 600, "GLImac");
 
@@ -77,11 +80,11 @@ int main(int argc, char** argv) {
 	const GLuint VERTEX_ATTR_POSITION = 0;
 	const GLuint VERTEX_ATTR_COLOR = 1;
 	glEnableVertexAttribArray(VERTEX_ATTR_POSITION);
-	//glEnableVertexAttribArray(VERTEX_ATTR_COLOR);
+	glEnableVertexAttribArray(VERTEX_ATTR_COLOR);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, *vbos);
 	glVertexAttribPointer(VERTEX_ATTR_POSITION, 2, GL_FLOAT, GL_FALSE,sizeof(Vertex2DColor), offsetof(Vertex2DColor, position));
-	//glVertexAttribPointer(VERTEX_ATTR_COLOR, 3, GL_FLOAT, GL_FALSE,sizeof(Vertex2DColor),  (const GLvoid*)(offsetof(Vertex2DColor, color)));
+	glVertexAttribPointer(VERTEX_ATTR_COLOR, 3, GL_FLOAT, GL_FALSE,sizeof(Vertex2DColor),  (const GLvoid*)(offsetof(Vertex2DColor, color)));
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
 	glBindVertexArray(*vaos);
@@ -107,10 +110,10 @@ int main(int argc, char** argv) {
          * HERE SHOULD COME THE RENDERING CODE
          *********************************/
          
-	glClear(GL_COLOR_BUFFER_BIT);
-	glBindVertexArray(*vaos);
-	glDrawArrays(GL_TRIANGLES, 0, 3); // Si on veut dessiner plus de triangle le dernier paramétre serait plus grand
-	glBindVertexArray(0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glBindVertexArray(*vaos);
+        glDrawArrays(GL_TRIANGLES, 0, 3); // Si on veut dessiner plus de triangle le dernier paramétre serait plus grand
+        glBindVertexArray(0);
          
          /*********************************
          * END OF THE RENDERING CODE

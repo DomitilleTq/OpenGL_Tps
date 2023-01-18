@@ -3,8 +3,22 @@
 #include <iostream>
 #include <glimac/Program.hpp>
 #include <glimac/FilePath.hpp>
+#include <glimac/glm.hpp>
+#include <cstddef>
 
 using namespace glimac;
+
+struct Vertex2DColor {
+	glm::vec2 position ;
+	glm::vec3 color ;
+	
+	Vertex2DColor(){}
+	Vertex2DColor(glm::vec2 position_,glm::vec3 color_)
+    {    
+   	    position = position_;
+        color = color_;
+    }
+};
 
 int main(int argc, char** argv) {
     // Initialize SDL and open a window
@@ -21,7 +35,7 @@ int main(int argc, char** argv) {
     std::cout << "GLEW Version : " << glewGetString(GLEW_VERSION) << std::endl;
     
     FilePath applicationPath(argv[0]);
-    Program program = loadProgram(applicationPath.dirPath() + "shaders/triangle.vs.glsl", applicationPath.dirPath() + "shaders/triangle.fs.glsl");
+    Program program = loadProgram(applicationPath.dirPath() + "shaders/color2D.vs.glsl", applicationPath.dirPath() + "shaders/color2D.fs.glsl");
     program.use();
 
     /*********************************
@@ -38,11 +52,12 @@ int main(int argc, char** argv) {
 	// On peut à présent modifier le VBO en passant par la cible GL_ARRAY_BUFFER
 	
 	// Remplissage du VBO
-	GLfloat vertices[] = { -0.5f, -0.5f, 1.f, 0.f, 0.f, 
-	0.5f, -0.5f, 0.f, 1.f, 0.f, 
-	0.0f, 0.5f, 0.f, 0.f, 1.f 
-	};
-	glBufferData(GL_ARRAY_BUFFER, 15 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+	Vertex2DColor vertices[] = {
+		Vertex2DColor(glm::vec2(-0.5, -0.5), glm::vec3(1, 0, 0)),
+		Vertex2DColor(glm::vec2(0.5, -0.5), glm::vec3(0, 1, 0)),
+		Vertex2DColor(glm::vec2(0, 0.5), glm::vec3(0, 0, 1))
+    };
+	glBufferData(GL_ARRAY_BUFFER, 3 * sizeof(Vertex2DColor), vertices, GL_STATIC_DRAW);
 	
 	// Débinde
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -53,14 +68,14 @@ int main(int argc, char** argv) {
 	glBindVertexArray(*vaos);
 	
 	// Faire attention que le vao soit bien bindé et que que ce soit le bon vao
-	const GLuint VERTEX_ATTR_POSITION = 3;
-	const GLuint VERTEX_ATTR_COLOR = 8;
+	const GLuint VERTEX_ATTR_POSITION = 0;
+	const GLuint VERTEX_ATTR_COLOR = 1;
 	glEnableVertexAttribArray(VERTEX_ATTR_POSITION);
 	glEnableVertexAttribArray(VERTEX_ATTR_COLOR);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, *vbos);
-	glVertexAttribPointer(VERTEX_ATTR_POSITION, 2, GL_FLOAT, GL_FALSE,5 * sizeof(GLfloat), 0);
-	glVertexAttribPointer(VERTEX_ATTR_COLOR, 3, GL_FLOAT, GL_FALSE,5 * sizeof(GLfloat),  (const GLvoid*)(2 * sizeof(GLfloat)));
+	glVertexAttribPointer(VERTEX_ATTR_POSITION, 2, GL_FLOAT, GL_FALSE,sizeof(Vertex2DColor), offsetof(Vertex2DColor, position));
+	glVertexAttribPointer(VERTEX_ATTR_COLOR, 3, GL_FLOAT, GL_FALSE,sizeof(Vertex2DColor),  (const GLvoid*)(offsetof(Vertex2DColor, color)));
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
 	glBindVertexArray(*vaos);
@@ -86,10 +101,10 @@ int main(int argc, char** argv) {
          * HERE SHOULD COME THE RENDERING CODE
          *********************************/
          
-	glClear(GL_COLOR_BUFFER_BIT);
-	glBindVertexArray(*vaos);
-	glDrawArrays(GL_TRIANGLES, 0, 3); // Si on veut dessiner plus de triangle le dernier paramétre serait plus grand
-	glBindVertexArray(0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glBindVertexArray(*vaos);
+        glDrawArrays(GL_TRIANGLES, 0, 3); // Si on veut dessiner plus de triangle le dernier paramétre serait plus grand
+        glBindVertexArray(0);
          
          /*********************************
          * END OF THE RENDERING CODE

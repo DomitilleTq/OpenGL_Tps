@@ -17,9 +17,10 @@ struct Vertex2DColor {
 	
 	Vertex2DColor(){}
 	Vertex2DColor(glm::vec2 position_,glm::vec3 color_)
-   {
-   	position = position_;
-      color = color_;}
+   	{
+   		position = position_;
+      	color = color_;
+	}
 };
 
 int main(int argc, char** argv) {
