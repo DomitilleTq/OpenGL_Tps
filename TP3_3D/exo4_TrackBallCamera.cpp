@@ -127,6 +127,7 @@ int main(int argc, char** argv) {
  
     // Application loop:
     bool done = false;
+    glm::ivec2 lastMousePos;
     while(!done) {
         // Event loop:
         SDL_Event e;
@@ -148,27 +149,31 @@ int main(int argc, char** argv) {
 		  //TrackBall.rotateUp(float degrees)
 		  //
 		  bool ClickDroit = windowManager.isMouseButtonPressed(SDL_BUTTON_RIGHT);
+		  glm::ivec2 Souris = windowManager.getMousePosition();
 		  
 		  if(ClickDroit){
-		  	glm::ivec2 Souris = windowManager.getMousePosition();
-		  	TrackBall.rotateLeft(10);
+		  	int dx = Souris.x - lastMousePos.x;
+		  	int dy = Souris.y - lastMousePos.y;
+		  	
+		  	TrackBall.rotateLeft(dx);
+		  	TrackBall.rotateUp(dy);
 		  }
         //std::cout << Souris << std::endl;
         //TrackBall.moveFront(float delta)
-		  //
 		  
+		  lastMousePos = Souris;
 		  
 		  //ProjMatrix = ProjMatrix*MatView;
         
         glm::mat4 MatView = TrackBall.getViewMatrix();
         
         glUniformMatrix4fv(locationMVMatrix,1,GL_FALSE, glm::value_ptr(MVMatrix*MatView));
-        glUniformMatrix4fv(locationNormalMatrix,1,GL_FALSE, glm::value_ptr(NormalMatrix*MatView));
+        glUniformMatrix4fv(locationNormalMatrix,1,GL_FALSE, glm::value_ptr(NormalMatrix));
         glUniformMatrix4fv(locationMVPMatrix,1,GL_FALSE, glm::value_ptr(ProjMatrix * MVMatrix*MatView));
         glDrawArrays(GL_TRIANGLES, 0, nvertices); 
 
         for(glm::vec3 pos : lunePosition) {
-            glm::mat4 MVMatrix = MatView*glm::translate(glm::mat4(1), glm::vec3(0, 0, -5)); // Translation
+            glm::mat4 MVMatrix = glm::translate(glm::mat4(1), glm::vec3(0, 0, -5))*MatView; // Translation
             MVMatrix = glm::rotate(MVMatrix, windowManager.getTime(), glm::vec3(0, 1, 0)); // Translation * Rotation
             MVMatrix = glm::translate(MVMatrix, pos); // Translation * Rotation * Translation
             MVMatrix = glm::scale(MVMatrix, glm::vec3(0.2, 0.2, 0.2)); // Translation * Rotation * Translation * Scale
