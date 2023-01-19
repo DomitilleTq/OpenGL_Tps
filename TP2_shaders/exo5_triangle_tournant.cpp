@@ -15,9 +15,10 @@ struct Vertex2DUV{
 	
 	Vertex2DUV(){}
 	Vertex2DUV(glm::vec2 position_,glm::vec2 texture_)
-   {
-   	position = position_;
-      texture = texture_;}
+    {
+   	    position = position_;
+        texture = texture_;
+    }
 };
 
 //float uTime =45;
