@@ -7,8 +7,6 @@
 #include <glimac/Image.hpp>
 #include <cstddef>
 #include <glm/glm.hpp>
-//#include <glimac/common.hpp>
-//#include <glimac/Geometry.hpp>
 #include <glimac/Sphere.hpp>
 
 using namespace glimac;
@@ -38,6 +36,12 @@ int main(int argc, char** argv) {
     GLuint nvertices = sphere.getVertexCount();
     const ShapeVertex* vertices = sphere.getDataPointer();
 
+    // Les lunes autours de la terre
+    std::vector<glm::vec3> lunePosition;
+	int nlunes=32;	
+	for(int i=0;i<=nlunes;i++){
+		lunePosition.push_back(glm::sphericalRand(2.f));
+	}
 
     //---------------------------------
     // Textures
@@ -53,8 +57,9 @@ int main(int argc, char** argv) {
    	    std::cout << "imgTriforce null " << std::endl;
 
    	// créer un nouveau texture object
-    GLuint * textures = new GLuint[2];
-    glGenTextures(1,textures);   	
+    GLuint nsize = 2;
+    GLuint * textures = new GLuint[nsize];
+    glGenTextures(nsize,textures);   	
 
     // binder la texture sur la cible GL_TEXTURE_2D
     glBindTexture(GL_TEXTURE_2D,textures[0]);
@@ -80,6 +85,7 @@ int main(int argc, char** argv) {
     // spécifier les filtres à appliquer
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
     // débinder la texture
     glBindTexture(GL_TEXTURE_2D,0);
 
@@ -125,7 +131,7 @@ int main(int argc, char** argv) {
 	glBindBuffer(GL_ARRAY_BUFFER, *vbos);
 	glVertexAttribPointer(VERTEX_ATTR_POSITION, 3, GL_FLOAT, GL_FALSE,sizeof(ShapeVertex), offsetof(ShapeVertex, position));
 	glVertexAttribPointer(VERTEX_ATTR_NORMAL, 3, GL_FLOAT, GL_FALSE,sizeof(ShapeVertex),  (const GLvoid*)(offsetof(ShapeVertex, normal)));
-	glVertexAttribPointer(VERTEX_ATTR_TEXTURE, 2, GL_FLOAT, GL_FALSE,sizeof(glm::vec2),  (const GLvoid*)0);
+	glVertexAttribPointer(VERTEX_ATTR_TEXTURE, 2, GL_FLOAT, GL_FALSE,sizeof(ShapeVertex),  (const GLvoid*)(offsetof(ShapeVertex, texCoords)));
 	
     // Debind vbo et vao
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -148,16 +154,6 @@ int main(int argc, char** argv) {
 
 
     //---------------------------------
-    // Positions des lunes
-    //---------------------------------
-
-    std::vector<glm::vec3> lunePosition;
-	int nlunes=32;	
-	for(int i=0;i<=nlunes;i++){
-		lunePosition.push_back(glm::sphericalRand(2.f));
-	}
-
-    //---------------------------------
     // Boucle des drawings
     //---------------------------------
  
@@ -178,18 +174,19 @@ int main(int argc, char** argv) {
         // bindez la texture sur la cible GL_TEXTURE_2D
         glBindTexture(GL_TEXTURE_2D,textures[0]);
         
-        glUniformMatrix4fv(locationMVMatrix,1,GL_FALSE, glm::value_ptr(MVMatrix));
+        glm::mat4 MV_terre = glm::rotate(MVMatrix, windowManager.getTime(), glm::vec3(0, 1, 0)); 
+        glUniformMatrix4fv(locationMVMatrix,1,GL_FALSE, glm::value_ptr(MV_terre));
         glUniformMatrix4fv(locationNormalMatrix,1,GL_FALSE, glm::value_ptr(NormalMatrix));
-        glUniformMatrix4fv(locationMVPMatrix,1,GL_FALSE, glm::value_ptr(ProjMatrix * MVMatrix));
+        glUniformMatrix4fv(locationMVPMatrix,1,GL_FALSE, glm::value_ptr(ProjMatrix * MV_terre));
         glDrawArrays(GL_TRIANGLES, 0, nvertices); 
 
         for(glm::vec3 pos : lunePosition) {
-            glm::mat4 MVMatrix = glm::translate(glm::mat4(1), glm::vec3(0, 0, -5)); // Translation
-            MVMatrix = glm::rotate(MVMatrix, windowManager.getTime(), glm::vec3(0, 1, 0)); // Translation * Rotation
-            MVMatrix = glm::translate(MVMatrix, pos); // Translation * Rotation * Translation
-            MVMatrix = glm::scale(MVMatrix, glm::vec3(0.2, 0.2, 0.2)); // Translation * Rotation * Translation * Scale
-            glUniformMatrix4fv(locationMVMatrix,1,GL_FALSE, glm::value_ptr(MVMatrix));
-            glUniformMatrix4fv(locationMVPMatrix,1,GL_FALSE, glm::value_ptr(ProjMatrix * MVMatrix));
+            glm::mat4 MV_lune = glm::translate(glm::mat4(1), glm::vec3(0, 0, -5)); // Translation
+            MV_lune = glm::rotate(MV_lune, windowManager.getTime(), glm::vec3(0, 1, 0)); // Translation * Rotation
+            MV_lune = glm::translate(MV_lune, pos); // Translation * Rotation * Translation
+            MV_lune = glm::scale(MV_lune, glm::vec3(0.2, 0.2, 0.2)); // Translation * Rotation * Translation * Scale
+            glUniformMatrix4fv(locationMVMatrix,1,GL_FALSE, glm::value_ptr(MV_lune));
+            glUniformMatrix4fv(locationMVPMatrix,1,GL_FALSE, glm::value_ptr(ProjMatrix * MV_lune));
             glBindTexture(GL_TEXTURE_2D,textures[1]);
             glDrawArrays(GL_TRIANGLES, 0, nvertices); 
         }
