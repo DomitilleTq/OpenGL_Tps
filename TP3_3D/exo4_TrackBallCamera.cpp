@@ -5,7 +5,7 @@
 #include <glimac/FilePath.hpp>
 #include <glimac/glm.hpp>
 #include <glimac/Image.hpp>
-#include <glimac/TrackBallCamera.hpp>
+#include <glimac/TrackballCamera.hpp>
 #include <cstddef>
 #include <glm/glm.hpp>
 //#include <glimac/common.hpp>
@@ -116,7 +116,11 @@ int main(int argc, char** argv) {
     // Creation TrackBall
     //---------------------------------
 	
-	 TrackBall = TrackballCamera();
+	 TrackballCamera TrackBall = TrackballCamera();
+	
+	 
+
+	
     //---------------------------------
     // Boucle des drawings
     //---------------------------------
@@ -138,13 +142,33 @@ int main(int argc, char** argv) {
         // bindez la texture sur la cible GL_TEXTURE_2D
         // glBindTexture(GL_TEXTURE_2D,textures[0]);
         
-        glUniformMatrix4fv(locationMVMatrix,1,GL_FALSE, glm::value_ptr(MVMatrix));
-        glUniformMatrix4fv(locationNormalMatrix,1,GL_FALSE, glm::value_ptr(NormalMatrix));
-        glUniformMatrix4fv(locationMVPMatrix,1,GL_FALSE, glm::value_ptr(ProjMatrix * MVMatrix));
+        
+        // TrackBall
+        
+		  //TrackBall.rotateUp(float degrees)
+		  //
+		  bool ClickDroit = windowManager.isMouseButtonPressed(SDL_BUTTON_RIGHT);
+		  
+		  if(ClickDroit){
+		  	glm::ivec2 Souris = windowManager.getMousePosition();
+		  	TrackBall.rotateLeft(10);
+		  }
+        //std::cout << Souris << std::endl;
+        //TrackBall.moveFront(float delta)
+		  //
+		  
+		  
+		  //ProjMatrix = ProjMatrix*MatView;
+        
+        glm::mat4 MatView = TrackBall.getViewMatrix();
+        
+        glUniformMatrix4fv(locationMVMatrix,1,GL_FALSE, glm::value_ptr(MVMatrix*MatView));
+        glUniformMatrix4fv(locationNormalMatrix,1,GL_FALSE, glm::value_ptr(NormalMatrix*MatView));
+        glUniformMatrix4fv(locationMVPMatrix,1,GL_FALSE, glm::value_ptr(ProjMatrix * MVMatrix*MatView));
         glDrawArrays(GL_TRIANGLES, 0, nvertices); 
 
         for(glm::vec3 pos : lunePosition) {
-            glm::mat4 MVMatrix = glm::translate(glm::mat4(1), glm::vec3(0, 0, -5)); // Translation
+            glm::mat4 MVMatrix = MatView*glm::translate(glm::mat4(1), glm::vec3(0, 0, -5)); // Translation
             MVMatrix = glm::rotate(MVMatrix, windowManager.getTime(), glm::vec3(0, 1, 0)); // Translation * Rotation
             MVMatrix = glm::translate(MVMatrix, pos); // Translation * Rotation * Translation
             MVMatrix = glm::scale(MVMatrix, glm::vec3(0.2, 0.2, 0.2)); // Translation * Rotation * Translation * Scale
