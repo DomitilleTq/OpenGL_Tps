@@ -102,9 +102,19 @@ int main(int argc, char** argv) {
 
 
     //---------------------------------
-    // Boucle des drawings
+    // Positions des lunes
     //---------------------------------
 
+    std::vector<glm::vec3> lunePosition;
+	int nlunes=32;	
+	for(int i=0;i<=nlunes;i++){
+		lunePosition.push_back(glm::sphericalRand(2.f));
+	}
+
+    //---------------------------------
+    // Boucle des drawings
+    //---------------------------------
+ 
     // Application loop:
     bool done = false;
     while(!done) {
@@ -125,8 +135,18 @@ int main(int argc, char** argv) {
         glUniformMatrix4fv(locationMVMatrix,1,GL_FALSE, glm::value_ptr(MVMatrix));
         glUniformMatrix4fv(locationNormalMatrix,1,GL_FALSE, glm::value_ptr(NormalMatrix));
         glUniformMatrix4fv(locationMVPMatrix,1,GL_FALSE, glm::value_ptr(ProjMatrix * MVMatrix));
-
         glDrawArrays(GL_TRIANGLES, 0, nvertices); 
+
+        for(glm::vec3 pos : lunePosition) {
+            glm::mat4 MVMatrix = glm::translate(glm::mat4(1), glm::vec3(0, 0, -5)); // Translation
+            MVMatrix = glm::rotate(MVMatrix, windowManager.getTime(), glm::vec3(0, 1, 0)); // Translation * Rotation
+            MVMatrix = glm::translate(MVMatrix, pos); // Translation * Rotation * Translation
+            MVMatrix = glm::scale(MVMatrix, glm::vec3(0.2, 0.2, 0.2)); // Translation * Rotation * Translation * Scale
+            glUniformMatrix4fv(locationMVMatrix,1,GL_FALSE, glm::value_ptr(MVMatrix));
+            glUniformMatrix4fv(locationMVPMatrix,1,GL_FALSE, glm::value_ptr(ProjMatrix * MVMatrix));
+            glDrawArrays(GL_TRIANGLES, 0, nvertices); 
+        }
+
 
         // glBindTexture(GL_TEXTURE_2D,0);
         glBindVertexArray(0);
