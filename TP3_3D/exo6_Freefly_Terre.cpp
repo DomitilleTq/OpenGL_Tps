@@ -240,9 +240,22 @@ int main(int argc, char** argv) {
 		  	int dx = Souris.x - lastMousePos.x;
 		  	int dy = Souris.y - lastMousePos.y;
 		  	
-		  	Freefly.rotateLeft(dx);
-		  	Freefly.rotateUp(dy);
+		  	Freefly.rotateLeft(-dy);
+		  	Freefly.rotateUp(-dx);
 		  }
+		  
+		  if(windowManager.isKeyPressed(SDLK_z)){
+		  	 Freefly.moveFront(0.1);
+		  }
+		  else if(windowManager.isKeyPressed(SDLK_q)){
+		  	 Freefly.moveLeft(0.1);
+		  }
+		  else if(windowManager.isKeyPressed(SDLK_s)){
+		  	 Freefly.moveFront(-0.1);
+		  }
+		  else if(windowManager.isKeyPressed(SDLK_d)){
+		  	 Freefly.moveLeft(-0.1);
+		  } // Pareille pour reculer et pour aller a gauche et a droite
 		  
 		  /*bool ClickGauche = windowManager.isMouseButtonPressed(SDL_BUTTON_LEFT);
 		  if(ClickGauche){
