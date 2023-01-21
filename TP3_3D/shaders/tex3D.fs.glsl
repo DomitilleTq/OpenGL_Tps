@@ -13,3 +13,4 @@ void main() {
 	//fColor=normalize(vNormal_vs);
 	fColor=texture(uTexture,vTexCoords).xyz;
 }
+
