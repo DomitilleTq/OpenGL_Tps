@@ -265,11 +265,15 @@ int main(int argc, char** argv) {
         glUniform1i(earthProgram.uEarthTexture, 0);
         glUniform1i(earthProgram.uCloudTexture, 1);
 
-        glm::mat4 globalMVMatrix = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, -5));
-        glm::mat4 earthMVMatrix = glm::rotate(globalMVMatrix, windowManager.getTime(), glm::vec3(0, 1, 0));
-        glUniformMatrix4fv(earthProgram.uMVMatrix, 1, GL_FALSE, glm::value_ptr(earthMVMatrix*MatView));
-        glUniformMatrix4fv(earthProgram.uNormalMatrix, 1, GL_FALSE, glm::value_ptr(glm::transpose(glm::inverse(earthMVMatrix))));
-        glUniformMatrix4fv(earthProgram.uMVPMatrix, 1, GL_FALSE, glm::value_ptr(ProjMatrix * earthMVMatrix*MatView));
+        glUniformMatrix4fv(earthProgram.uMVMatrix,1,GL_FALSE, glm::value_ptr(MVMatrix*MatView));
+        glUniformMatrix4fv(earthProgram.uNormalMatrix,1,GL_FALSE, glm::value_ptr(NormalMatrix));
+        glUniformMatrix4fv(earthProgram.uMVPMatrix,1,GL_FALSE, glm::value_ptr(ProjMatrix * MVMatrix*MatView));
+
+        // glm::mat4 globalMVMatrix = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, -5));
+        // glm::mat4 earthMVMatrix = glm::rotate(globalMVMatrix, windowManager.getTime(), glm::vec3(0, 1, 0));
+        // glUniformMatrix4fv(earthProgram.uMVMatrix, 1, GL_FALSE, glm::value_ptr(earthMVMatrix*MatView));
+        // glUniformMatrix4fv(earthProgram.uNormalMatrix, 1, GL_FALSE, glm::value_ptr(glm::transpose(glm::inverse(earthMVMatrix))));
+        // glUniformMatrix4fv(earthProgram.uMVPMatrix, 1, GL_FALSE, glm::value_ptr(ProjMatrix * earthMVMatrix*MatView));
 
         // Activer une unité de texture pour binder des textures dessus
         glActiveTexture(GL_TEXTURE0);
