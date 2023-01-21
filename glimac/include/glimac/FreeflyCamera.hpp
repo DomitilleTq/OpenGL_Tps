@@ -33,25 +33,27 @@ public :
     
     void moveLeft(float t){
     	m_Position += t*m_LeftVector;
+    	computeDirectionVectors();
     }
     
     void moveFront(float t){
     	m_Position += t*m_FrontVector;
+    	computeDirectionVectors();
     }
     
     void rotateLeft(float degrees){
-    	m_fTheta+=glm::radians(degrees);
+    	m_fTheta = m_fTheta + glm::radians(degrees);
+    	computeDirectionVectors();
     }
     void rotateUp(float degrees){
-    	m_fPhi += glm::radians(degrees);
+    	m_fPhi = m_fPhi + glm::radians(degrees);
+    	computeDirectionVectors();
     }
     
     glm::mat4 getViewMatrix() const{
     	glm::vec3 point = m_Position+m_FrontVector;
     	return glm::lookAt(m_Position, point, m_UpVector);
     }
-
-	
 
 };
 
