@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <glm/glm.hpp>
 #include <glimac/Sphere.hpp>
+#include <glimac/FreeflyCamera.hpp>
 #include <glimac/TrackballCamera.hpp>
 
 using namespace glimac;
@@ -19,38 +20,72 @@ using namespace glimac;
 struct EarthProgram {
     Program m_Program;
 
+    // positions des Matrices de transformation de repere
     GLint uMVPMatrix;
     GLint uMVMatrix;
     GLint uNormalMatrix;
+    // positions des unites de texture
     GLint uEarthTexture;
     GLint uCloudTexture;
+    // positions des param de lumière
+    GLint uKd; // coefficient de reflection diffuse de l'objet
+    GLint uKs; // coefficient de reflection glossy de l'objet
+    GLint uShininess; // exposant de brillance permettant de controller la taille de la "tache" de brillance glossy
+    GLint uLightDir_vs;  // direction incidente 
+    GLint uLightIntensity; // intensite de la lumière incidente 
+
 
     EarthProgram(const FilePath& applicationPath):
         m_Program(loadProgram(applicationPath.dirPath() + "shaders/3D.vs.glsl",
-                              applicationPath.dirPath() + "shaders/multiTex3D.fs.glsl")) {
+                              applicationPath.dirPath() + "shaders/directionallight_tex.fs.glsl")) {             
+        // positions des Matrices de transformation de repere
         uMVPMatrix = glGetUniformLocation(m_Program.getGLId(), "uMVPMatrix");
         uMVMatrix = glGetUniformLocation(m_Program.getGLId(), "uMVMatrix");
         uNormalMatrix = glGetUniformLocation(m_Program.getGLId(), "uNormalMatrix");
+        // positions des unites de texture
         uEarthTexture = glGetUniformLocation(m_Program.getGLId(), "uEarthTexture");
         uCloudTexture = glGetUniformLocation(m_Program.getGLId(), "uCloudTexture");
+        // positions des param de lumière
+        uKd = glGetUniformLocation(m_Program.getGLId(), "uKd");
+        uKs = glGetUniformLocation(m_Program.getGLId(), "uKs");
+        uShininess = glGetUniformLocation(m_Program.getGLId(), "uShininess");
+        uLightDir_vs = glGetUniformLocation(m_Program.getGLId(), "uLightDir_vs");
+        uLightIntensity = glGetUniformLocation(m_Program.getGLId(), "uLightIntensity");
     }
 };
 
 struct MoonProgram {
     Program m_Program;
 
+    // positions des Matrices de transformation de repere
     GLint uMVPMatrix;
     GLint uMVMatrix;
-    GLint uNormalMatrix;
+    GLint uNormalMatrix;    
+    // positions des unites de texture
     GLint uTexture;
+    // positions des param de lumière 
+    GLint uKd; // coefficient de reflection diffuse de l'objet
+    GLint uKs; // coefficient de reflection glossy de l'objet
+    GLint uShininess; // exposant de brillance permettant de controller la taille de la "tache" de brillance glossy
+    GLint uLightDir_vs;  // direction incidente 
+    GLint uLightIntensity; // intensite de la lumière incidente 
+
 
     MoonProgram(const FilePath& applicationPath):
         m_Program(loadProgram(applicationPath.dirPath() + "shaders/3D.vs.glsl",
-                              applicationPath.dirPath() + "shaders/tex3D.fs.glsl")) {
+                              applicationPath.dirPath() + "shaders/directionallight_tex.fs.glsl")) {
+        // positions des Matrices de transformation de repere
         uMVPMatrix = glGetUniformLocation(m_Program.getGLId(), "uMVPMatrix");
         uMVMatrix = glGetUniformLocation(m_Program.getGLId(), "uMVMatrix");
         uNormalMatrix = glGetUniformLocation(m_Program.getGLId(), "uNormalMatrix");
-        uTexture = glGetUniformLocation(m_Program.getGLId(), "uTexture");
+        // positions des unites de texture
+        uTexture = glGetUniformLocation(m_Program.getGLId(), "uEarthTexture");
+        // positions des param de lumière 
+        uKd = glGetUniformLocation(m_Program.getGLId(), "uKd");
+        uKs = glGetUniformLocation(m_Program.getGLId(), "uKs");
+        uShininess = glGetUniformLocation(m_Program.getGLId(), "uShininess");
+        uLightDir_vs = glGetUniformLocation(m_Program.getGLId(), "uLightDir_vs");
+        uLightIntensity = glGetUniformLocation(m_Program.getGLId(), "uLightIntensity");
     }
 };
 
@@ -82,8 +117,6 @@ std::unique_ptr<Image> loadAndBindTextures(std::string img_src, GLuint * texture
 
     return img_ptr;
 } 
-
-
 
 
 // ------------------------------------------
@@ -204,21 +237,30 @@ int main(int argc, char** argv) {
     glm::mat4 ProjMatrix = glm::perspective(glm::radians(70.f), (GLfloat)largeur/(GLfloat)hauteur, 0.1f, 100.f); 
     glm::mat4 MVMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -5.f));
     glm::mat4 NormalMatrix = glm::transpose(glm::inverse(MVMatrix));
-    
-    //---------------------------------
+
+	
+	//---------------------------------
     // Creation TrackBall
     //---------------------------------
 	
-	 TrackballCamera TrackBall = TrackballCamera();
-
-
+	//  TrackballCamera TrackBall = TrackballCamera();
+	 FreeflyCamera Freefly = FreeflyCamera();
+			
     //---------------------------------
     // Boucle des drawings
     //---------------------------------
  
+    GLfloat uKd = 0.5; // coefficient de reflection diffuse de l'objet
+    GLfloat uKs = 0.5; // coefficient de reflection glossy de l'objet
+    GLfloat uShininess = 0.5; // exposant de brillance (taille de brillance glossy)
+    glm::vec3 uLightDir_vs = glm::vec3(1,1,1);  // direction incidente 
+    GLfloat uLightIntensity = 1.0; // intensite de la lumière incidente 
+
+
+    glm::ivec2 lastMousePos;
+
     // Application loop:
     bool done = false;
-    glm::ivec2 lastMousePos;
     while(!done) {
         // Event loop:
         SDL_Event e;
@@ -230,9 +272,10 @@ int main(int argc, char** argv) {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glBindVertexArray(*vaos);
+
+
+         // TrackBall
         
-        // TrackBall
-		  
 		  bool ClickDroit = windowManager.isMouseButtonPressed(SDL_BUTTON_RIGHT);
 		  glm::ivec2 Souris = windowManager.getMousePosition();
 		  
@@ -240,40 +283,52 @@ int main(int argc, char** argv) {
 		  	int dx = Souris.x - lastMousePos.x;
 		  	int dy = Souris.y - lastMousePos.y;
 		  	
-		  	TrackBall.rotateLeft(dx);
-		  	TrackBall.rotateUp(dy);
+		  	Freefly.rotateLeft(-dy);
+		  	Freefly.rotateUp(-dx);
 		  }
 		  
-		  bool ClickGauche = windowManager.isMouseButtonPressed(SDL_BUTTON_LEFT);
-		  if(ClickGauche){
-		  	int delta = Souris.y - lastMousePos.y;
-		  	
-		  	TrackBall.moveFront(delta);
+		  if(windowManager.isKeyPressed(SDLK_z)){
+		  	 Freefly.moveFront(0.1);
 		  }
+		  else if(windowManager.isKeyPressed(SDLK_q)){
+		  	 Freefly.moveLeft(0.1);
+		  }
+		  else if(windowManager.isKeyPressed(SDLK_s)){
+		  	 Freefly.moveFront(-0.1);
+		  }
+		  else if(windowManager.isKeyPressed(SDLK_d)){
+		  	 Freefly.moveLeft(-0.1);
+		  } // Pareille pour reculer et pour aller a gauche et a droite
+		  
 		  
 		  lastMousePos = Souris;
         
-        glm::mat4 MatView = TrackBall.getViewMatrix();
+        glm::mat4 MatView = Freefly.getViewMatrix();
         
 
         // Avant le dessin de chaque entitée (terre ou lune), 
         // changer le programme de shader utilisé en utilisant la méthode use()
         earthProgram.m_Program.use();
-
         // Indique à OpenGL qu'il doit aller chercher sur l'unité de texture 0 
         // pour lire dans la texture voulue
         glUniform1i(earthProgram.uEarthTexture, 0);
         glUniform1i(earthProgram.uCloudTexture, 1);
 
-        glUniformMatrix4fv(earthProgram.uMVMatrix,1,GL_FALSE, glm::value_ptr(MVMatrix*MatView));
-        glUniformMatrix4fv(earthProgram.uNormalMatrix,1,GL_FALSE, glm::value_ptr(NormalMatrix));
-        glUniformMatrix4fv(earthProgram.uMVPMatrix,1,GL_FALSE, glm::value_ptr(ProjMatrix * MVMatrix*MatView));
+        glUniform1f(earthProgram.uKd,uKd);
+        glUniform1f(earthProgram.uKs,uKs);
+        glUniform1f(earthProgram.uShininess,uShininess);
+        glUniform1f(earthProgram.uLightIntensity,uLightIntensity);
+        // glUniform3fv(earthProgram.uLightDir_vs,1,glm::value_ptr(uLightDir_vs));
 
-        // glm::mat4 globalMVMatrix = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, -5));
-        // glm::mat4 earthMVMatrix = glm::rotate(globalMVMatrix, windowManager.getTime(), glm::vec3(0, 1, 0));
-        // glUniformMatrix4fv(earthProgram.uMVMatrix, 1, GL_FALSE, glm::value_ptr(earthMVMatrix*MatView));
-        // glUniformMatrix4fv(earthProgram.uNormalMatrix, 1, GL_FALSE, glm::value_ptr(glm::transpose(glm::inverse(earthMVMatrix))));
-        // glUniformMatrix4fv(earthProgram.uMVPMatrix, 1, GL_FALSE, glm::value_ptr(ProjMatrix * earthMVMatrix*MatView));
+        glUniformMatrix4fv(earthProgram.uMVMatrix, 1, GL_FALSE, glm::value_ptr(MVMatrix*MatView));
+        glUniformMatrix4fv(earthProgram.uMVPMatrix, 1, GL_FALSE, glm::value_ptr(ProjMatrix * MVMatrix*MatView));
+        glUniformMatrix4fv(earthProgram.uNormalMatrix, 1, GL_FALSE, glm::value_ptr(NormalMatrix));
+        
+    // Pour lumiere directionnel, multiplier lightDir avec NormalMatrix
+    // glm::vec3 lightDir_vs = glm::vec3(MatView*glm::vec4(uLightDir_vs,0));
+    glm::vec3 lightDir_vs = glm::vec3(NormalMatrix*glm::vec4(uLightDir_vs,0));
+    glUniform3fv(earthProgram.uLightDir_vs,1,glm::value_ptr(lightDir_vs));
+
 
         // Activer une unité de texture pour binder des textures dessus
         glActiveTexture(GL_TEXTURE0);
@@ -288,20 +343,45 @@ int main(int argc, char** argv) {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D,0);
 
-        // changer le programme de shader
-        moonProgram.m_Program.use();
+    moonProgram.m_Program.use();
+    glUniform1f(moonProgram.uKd,uKd);
+    glUniform1f(moonProgram.uKs,uKs);
+    glUniform1f(moonProgram.uShininess,uShininess);
+    glUniform1f(moonProgram.uLightIntensity,uLightIntensity);
+    // Pour lumiere directionnel, multiplier lightDir avec NormalMatrix
+    lightDir_vs = glm::vec3(NormalMatrix*glm::vec4(uLightDir_vs,0));
+    glUniform3fv(moonProgram.uLightDir_vs,1,glm::value_ptr(lightDir_vs));
+    
         glUniform1i(moonProgram.uTexture, 0);            
         // Bind texture lune 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D,moonTexture);
-
+    
         for(glm::vec3 pos : lunePosition) {
-            glm::mat4 MV_lune = glm::translate(glm::mat4(1), glm::vec3(0, 0, -5))*MatView; // Translation
-            MV_lune = glm::rotate(MV_lune, windowManager.getTime(), glm::vec3(0, 1, 0)); // Translation * Rotation
+            
+            GLfloat a = windowManager.getTime();
+            glm::mat4 MV_lune = glm::translate(glm::mat4(1), glm::vec3(0, 0, -5)); // Translation
+            MV_lune *= MatView; // a faire juste avant le rotate selon y
+            MV_lune = glm::rotate(MV_lune, a, glm::vec3(0, 1, 0)); // Translation * Rotation
             MV_lune = glm::translate(MV_lune, pos); // Translation * Rotation * Translation
             MV_lune = glm::scale(MV_lune, glm::vec3(0.2, 0.2, 0.2)); // Translation * Rotation * Translation * Scale
-            glUniformMatrix4fv(earthProgram.uMVMatrix,1,GL_FALSE, glm::value_ptr(MV_lune));
-            glUniformMatrix4fv(earthProgram.uMVPMatrix,1,GL_FALSE, glm::value_ptr(ProjMatrix * MV_lune));
+            glUniformMatrix4fv(moonProgram.uMVMatrix,1,GL_FALSE, glm::value_ptr(MV_lune));
+            glUniformMatrix4fv(moonProgram.uMVPMatrix,1,GL_FALSE, glm::value_ptr(ProjMatrix * MV_lune));
+            // glUniformMatrix4fv(moonProgram.uNormalMatrix, 1, GL_FALSE, glm::value_ptr(glm::transpose(glm::inverse(MV_lune))));
+            glUniformMatrix4fv(moonProgram.uNormalMatrix, 1, GL_FALSE, glm::value_ptr(NormalMatrix));
+
+    // lightDir_vs = glm::vec3(glm::rotate(glm::mat4(1), a, glm::vec3(0, -1, 0))*glm::vec4(uLightDir_vs,0));
+    // glUniform3fv(moonProgram.uLightDir_vs,1,glm::value_ptr(lightDir_vs));
+
+    // lightDir_vs = glm::vec3(glm::transpose(glm::inverse(MV_lune))*glm::vec4(uLightDir_vs,0));
+    // glUniform3fv(moonProgram.uLightDir_vs,1,glm::value_ptr(lightDir_vs));
+    
+    // lightDir_vs = glm::vec3(MatView*glm::vec4(uLightDir_vs,0));
+    // glUniform3fv(moonProgram.uLightDir_vs,1,glm::value_ptr(lightDir_vs));
+
+    // lightDir_vs = glm::vec3(MatView*glm::vec4(uLightDir_vs,0));
+    // glUniform3fv(moonProgram.uLightDir_vs,1,glm::value_ptr(lightDir_vs));
+
             // Dessiner après les bind de textures
             glDrawArrays(GL_TRIANGLES, 0, nvertices); 
         }

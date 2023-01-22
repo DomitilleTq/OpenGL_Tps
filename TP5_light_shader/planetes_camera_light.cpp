@@ -267,30 +267,38 @@ int main(int argc, char** argv) {
     glUniform1f(earthProgram.uKd,uKd);
     glUniform1f(earthProgram.uKs,uKs);
     glUniform1f(earthProgram.uShininess,uShininess);
-    glUniform3fv(earthProgram.uLightDir_vs,1,glm::value_ptr(uLightDir_vs));
     glUniform1f(earthProgram.uLightIntensity,uLightIntensity);
+    glUniform3fv(earthProgram.uLightDir_vs,1,glm::value_ptr(uLightDir_vs));
 
         glUniformMatrix4fv(earthProgram.uMVMatrix, 1, GL_FALSE, glm::value_ptr(MVMatrix*MatView));
-        glUniformMatrix4fv(earthProgram.uNormalMatrix, 1, GL_FALSE, glm::value_ptr(glm::transpose(glm::inverse(NormalMatrix))));
         glUniformMatrix4fv(earthProgram.uMVPMatrix, 1, GL_FALSE, glm::value_ptr(ProjMatrix * MVMatrix*MatView));
+        glUniformMatrix4fv(earthProgram.uNormalMatrix, 1, GL_FALSE, glm::value_ptr(glm::transpose(glm::inverse(NormalMatrix))));
         
         // Dessiner
         glDrawArrays(GL_TRIANGLES, 0, nvertices); 
 
 
+    moonProgram.m_Program.use();
+    glUniform1f(moonProgram.uKd,uKd);
+    glUniform1f(moonProgram.uKs,uKs);
+    glUniform1f(moonProgram.uShininess,uShininess);
+    glUniform1f(moonProgram.uLightIntensity,uLightIntensity);
+    glUniform3fv(moonProgram.uLightDir_vs,1,glm::value_ptr(uLightDir_vs));
+    
         for(glm::vec3 pos : lunePosition) {
-    glUniform1f(earthProgram.uKd,uKd);
-    glUniform1f(earthProgram.uKs,uKs);
-    glUniform1f(earthProgram.uShininess,uShininess);
-    glUniform3fv(earthProgram.uLightDir_vs,1,glm::value_ptr(uLightDir_vs));
-    glUniform1f(earthProgram.uLightIntensity,uLightIntensity);
-
-            glm::mat4 MV_lune = glm::translate(glm::mat4(1), glm::vec3(0, 0, -5))*MatView; // Translation
-            MV_lune = glm::rotate(MV_lune, windowManager.getTime(), glm::vec3(0, 1, 0)); // Translation * Rotation
+            
+            GLfloat a = windowManager.getTime();
+            glm::mat4 MV_lune = glm::translate(glm::mat4(1), glm::vec3(0, 0, -5)); // Translation
+            MV_lune *= MatView;
+            MV_lune = glm::rotate(MV_lune, a, glm::vec3(0, 1, 0)); // Translation * Rotation
             MV_lune = glm::translate(MV_lune, pos); // Translation * Rotation * Translation
             MV_lune = glm::scale(MV_lune, glm::vec3(0.2, 0.2, 0.2)); // Translation * Rotation * Translation * Scale
-            glUniformMatrix4fv(earthProgram.uMVMatrix,1,GL_FALSE, glm::value_ptr(MV_lune));
-            glUniformMatrix4fv(earthProgram.uMVPMatrix,1,GL_FALSE, glm::value_ptr(ProjMatrix * MV_lune));
+            glUniformMatrix4fv(moonProgram.uMVMatrix,1,GL_FALSE, glm::value_ptr(MV_lune));
+            glUniformMatrix4fv(moonProgram.uMVPMatrix,1,GL_FALSE, glm::value_ptr(ProjMatrix * MV_lune));
+            glUniformMatrix4fv(moonProgram.uNormalMatrix, 1, GL_FALSE, glm::value_ptr(glm::transpose(glm::inverse(NormalMatrix))));
+
+    glm::mat4 antiRot = glm::rotate(glm::mat4(1), a, glm::vec3(0, -1, 0));
+    glUniform3fv(moonProgram.uLightDir_vs,1,glm::value_ptr(glm::vec3(antiRot*glm::vec4(uLightDir_vs,0))));
             
             // Dessiner après les bind de textures
             glDrawArrays(GL_TRIANGLES, 0, nvertices); 

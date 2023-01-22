@@ -20,7 +20,7 @@ vec3 blinnPhlong(vec3 wi, vec3 Li, vec3 N, float Kd, float Ks, float shininess, 
 void main() {	
     
     vec3 w0 = normalize(-vPosition_vs);
-    vec3 wi = uLightDir_vs;
+    vec3 wi = normalize(uLightDir_vs);
 
     fFragColor = blinnPhlong(
         wi,
